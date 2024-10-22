@@ -11,31 +11,23 @@ export const Register = () => {
         gender: '',
         phoneNumber: '',
         email: '',
-        image: null,
         skills: '',
         address: '',
         password: '',
-        cv: null,
+        image: '',
+        cv: '',
+
     });
 
 
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        if(name==='cv')
-        setFormData({
-            ...formData,
-            [name]: files[0], // For image and CV
-        });
+    const handleChange = (event) => {
+        const { name, value, type, files } = event.target;
+        setFormData((prevState) => ({
+            ...prevState,
+            [name]: type === 'file' ? files[0] : value,
+        }));
     };
 
     const validateForm = () => {
@@ -58,7 +50,15 @@ export const Register = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        await Fetch.register(formData)
+        const form = new FormData()
+        for (const key in formData) {
+            if (key === 'skills') {
+                form.append(key, formData[key].split(','));
+            } else
+            form.append(key, formData[key]);
+
+        }
+        await Fetch.register(form)
         if (validateForm()) {
         }
     };
@@ -169,12 +169,13 @@ export const Register = () => {
                     <input
                         type="file"
                         name="cv"
-                        onChange={handleFileChange}
+                        id="cv"
+                        onChange={handleChange}
                         className="w-full mb-4"
                         style={{ display: 'none' }}
                     />
                     <label
-                        htmlFor="file-upload"
+                        htmlFor="cv"
                         className="flex flex-col text-center cursor-pointer justify-center w-1/2 bg-blue-500 text-white p-2 rounded-3xl  h-48 m-4"
                     >
                         Upload your CV
@@ -183,14 +184,14 @@ export const Register = () => {
 
                     <input
                         type="file"
-                        id="file-upload"
-                        name ="image"
-                        onChange={handleFileChange}
+                        id="image"
+                        name="image"
+                        onChange={handleChange}
                         style={{ display: 'none' }}
                     />
 
                     <label
-                        htmlFor="file-upload"
+                        htmlFor="image"
                         className="flex flex-col text-center cursor-pointer justify-center w-1/2 bg-blue-500 text-white p-2 rounded-3xl  h-48 m-4"
                     >
                         Upload your image
