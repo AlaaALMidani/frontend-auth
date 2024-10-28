@@ -1,8 +1,15 @@
-import React from "react";
+
 import { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import RegisterImage from "../register.png";
+import RegisterImage from "../../register.png";
 import { Fetch } from "../../logic/logic.js";
+import { fetchUser } from "./registerSlices.js"
+import React from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+import { useNavigate } from 'react-router-dom';
+
+
 
 export const Register = () => {
     const [formData, setFormData] = useState({
@@ -20,9 +27,10 @@ export const Register = () => {
         cv: null,
     });
     const dispatch = useDispatch()
-    const [errorMessage, setErrorMessage] = useState("");
-
+    const state = useSelector(state => state.register)
+   
     const handleChange = (event) => {
+        console.log(state)
         const { name, value, type, files } = event.target;
         setFormData((prevState) => ({
             ...prevState,
@@ -30,48 +38,36 @@ export const Register = () => {
         }));
     };
 
-
-    const validateForm = () => {
-        // Basic validation logic
-        if (
-            !formData.firstName ||
-            !formData.lastName ||
-            !formData.email ||
-            !formData.password
-        ) {
-            setErrorMessage("All fields are required.");
-            return false;
-        }
-        if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            setErrorMessage("Email is invalid.");
-            return false;
-        }
-        if (formData.password.length < 6) {
-            setErrorMessage("Password must be at least 6 characters long.");
-            return false;
-        }
-        setErrorMessage("");
-        return true;
-    };
+    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const form = new FormData()
         console.log(formData)
         for (const key in formData) {
-
-            form.append(key, formData[key])
+            if (key === 'skills') {
+                console.log(formData[key].split(','))
+                form.append(key, formData[key].split(','))
+            } else {
+                form.append(key, formData[key])
+            }
         }
-        await Fetch.register(form);
+        console.log(form)
+        dispatch(fetchUser(form))
 
-        // if (validateForm()) {
-
-        // }
     };
+    if (state.data) {
+        if (state.data.ok) {
 
+            navigate('/login');
+        }
+
+    }
     return (
         <div className="flex flex-row items-center justify-center min-h-screen w-screen bg-violet-950 p-20  ">
             <img src={RegisterImage} alt={"2"} className="w-1/2 " />
+
+
             <form
                 onSubmit={handleSubmit}
                 className="bg-white p-6 align-middle justify-center rounded-lg shadow-md w-1/2"
@@ -147,45 +143,52 @@ export const Register = () => {
                     value={formData.password}
                 />
 
-                <div className="flex flex-row justify-between">
-                    <input
-                        type="file"
-                        name="cv"
-                        id="cv"
-                        onChange={handleChange}
-                        className="w-full mb-4"
-                        style={{ display: "none" }}
-                    />
-                    <label
-                        htmlFor="cv"
-                        className="flex flex-col text-center cursor-pointer justify-center w-1/2 bg-blue-500 text-white p-2 rounded-3xl  h-48 m-4"
-                    >
-                        Upload your image
-                    </label>
-
-                    <input
-                        type="file"
-                        name="image"
-                        id="image"
-                        onChange={handleChange}
-                        style={{ display: "none" }}
-                    />
-
-                    <label
-                        htmlFor="image"
-                        className="flex flex-col text-center cursor-pointer justify-center w-1/2 bg-blue-500 text-white p-2 rounded-3xl  h-48 m-4"
-                    >
-                        Upload your image
-                    </label>
-                </div>
-
-                {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
-                <button
-                    type="submit"
-                    className="w-full bg-purple-500 pe-96 text-white p-2 rounded hover:bg-purple-600"
+                <label
+                    htmlFor="cv"
+                    className="flex font-semibold"
                 >
-                    Register
-                </button>
+                    CV
+                </label>
+                <input
+                    type="file"
+                    name="cv"
+                    id="cv"
+                    onChange={handleChange}
+                    className="w-full mb-4"
+                    style={{ display: "block" }}
+                />
+                <label
+                    htmlFor="cv"
+                    className="flex font-semibold"
+                >
+                    Image
+                </label>
+
+                <input
+                    type="file"
+                    name="image"
+                    id="image"
+                    onChange={handleChange}
+
+                />
+
+                {
+                    state.data ? !state.data.ok ?
+                        Object.entries(state.data.validation).map(([field, message]) => (
+                            <div key={field} className="error-message text-red-700 mt-3">
+                                <b>{field}</b> : {message}
+                            </div>
+                        )) : <></> : <></>}
+
+                {state.loading ? <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <CircularProgress />
+                </Box> :
+                    <button
+                        type="submit"
+                        className="w-full bg-purple-500  text-white p-2 rounded hover:bg-purple-600 mt-5"
+                    >
+                        Register
+                    </button>}
             </form>
         </div>
     );
@@ -194,7 +197,7 @@ export const Register = () => {
 export const CustomInput = ({ type, name, value, label, handleChange }) => {
     return (
         <div className="block">
-            <label className="mb-2">{label}</label>
+            <label className="mb-2 font-semibold">{label}</label>
             <input
                 type={type ? type : "text"}
                 name={name}

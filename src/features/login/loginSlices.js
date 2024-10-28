@@ -8,26 +8,26 @@ const initialState = {
     error: '',
 };
 
-export const fetchUser = createAsyncThunk('register/signIn', async (d) => {
-    return Fetch.register(d).then(data => data)
+export const login = createAsyncThunk('login/', async (data) => {
+    return Fetch.login(data).then(data => data)
 })
-export const registerSlice = createSlice({
-    name: 'register',
+export const loginSlice = createSlice({
+    name: 'login',
     initialState,
     extraReducers: (builder) => {
 
-        builder.addCase(fetchUser.pending, (state) => {
+        builder.addCase(login.pending, (state) => {
             state.loading = true
         })
 
-        builder.addCase(fetchUser.fulfilled, (state, action) => {
+        builder.addCase(login.fulfilled, (state, action) => {
             state.loading = false
-            state.success = true 
+            state.success = true
             state.data = action.payload
             state.error = ''
         })
 
-        builder.addCase(fetchUser.rejected, (state, action) => {
+        builder.addCase(login.rejected, (state, action) => {
             state.loading = false
             state.data = null
             state.error = 'action'
@@ -35,4 +35,4 @@ export const registerSlice = createSlice({
     }
 })
 
-export default registerSlice.reducer
+export default loginSlice.reducer

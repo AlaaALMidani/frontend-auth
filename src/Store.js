@@ -1,8 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
-import {registerSlice} from './features/register/registerSlices'
-export default configureStore({
+import registerSlice from './features/register/registerSlices.js'
+import loginSlice from './features/login/loginSlices.js'
+
+const store = configureStore({
     reducer: {
-        register:registerSlice
+        register: registerSlice,
+        login: loginSlice
     },
 })
 
+export default store
